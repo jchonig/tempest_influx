@@ -1,13 +1,14 @@
 package main
 
 import (
-	"flag"
 	"log"
 	"net"
 	"net/url"
 	"net/http"
 	"os"
 	"strings"
+
+	flag "github.com/spf13/pflag"
 )
 
 var opts struct {
@@ -49,21 +50,25 @@ func packet(logger *log.Logger, url *url.URL, addr *net.UDPAddr, b []byte, n int
 	resp.Body.Close()
 }
 
-func main() {
-	logger := log.New(os.Stdout, "tempest_influx: ", log.LstdFlags)
-
+func parse() {
 	flag.StringVar(&opts.Source, "source", ":50222", "Source port to listen on")
 	flag.StringVar(&opts.Target, "target", "https://localhost:50222/api/v2/write", "URL to receive influx metrics")
 	flag.StringVar(&opts.Token, "token", "", "Authentication token")
 	flag.StringVar(&opts.Bucket, "bucket", "", "InfluxDB bucket name")
 	flag.IntVar(&opts.Buffer, "buffer", 10240, "Max buffer size for the socket io")
-	flag.BoolVar(&opts.Verbose, "v", false, "Verbose logging")
-	flag.BoolVar(&opts.Debug, "d", false, "Debug logging")
+	flag.BoolVarP(&opts.Verbose, "verbose", "v", false, "Verbose logging")
+	flag.BoolVarP(&opts.Debug, "debug", "d", false, "Debug logging")
 
 	flag.Parse()
 	if opts.Debug {
 		opts.Verbose = opts.Debug
 	}
+}
+
+func main() {
+	logger := log.New(os.Stdout, "tempest_influx: ", log.LstdFlags)
+
+	parse()
 
 	sourceAddr, err := net.ResolveUDPAddr("udp", opts.Source)
 	if err != nil {

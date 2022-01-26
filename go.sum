@@ -1,2 +1,4 @@
 github.com/de-wax/go-pkg/dewpoint v0.0.0-20220101175539-95c0f6ea9470 h1:Y81M55e2gRh52+8ssVFUMmWA9SzEwZsbSEV3IdwD2cg=
 github.com/de-wax/go-pkg/dewpoint v0.0.0-20220101175539-95c0f6ea9470/go.mod h1:nNVIZTeTGsc5+Cguv8e/YGt2rcM3J8pI5HtnLpIACls=
+github.com/spf13/pflag v1.0.5 h1:iy+VFUOCP1a+8yFto/drg2CJ5u0yRoB7fZw3DKv/JXA=
+github.com/spf13/pflag v1.0.5/go.mod h1:McXfInJRrz4CZXVZOBLb0bTZqETkiAhM9Iw0y3An2Bg=
