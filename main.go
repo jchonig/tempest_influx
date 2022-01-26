@@ -20,6 +20,35 @@ var opts struct {
 	Debug bool
 }
 
+func packet(logger *log.Logger, url *url.URL, addr *net.UDPAddr, b []byte, n int) {
+	line := tempest(logger, addr, b, n)
+	if line == "" {
+		return
+	}
+
+	if opts.Verbose {
+		logger.Printf("POST %s", line)
+	}
+
+	request, err := http.NewRequest("POST", url.String(), strings.NewReader(line))
+	if err != nil {
+		logger.Printf("NewRequest: %v", err)
+		return
+	}
+	request.Header.Set("Authorization", "Token " + opts.Token)
+
+	client := &http.Client{}
+	resp, err := client.Do(request)
+	if err != nil {
+		logger.Printf("Posting to %s: %v", opts.Target, err)
+		return
+	}
+	if resp.StatusCode >= 400 {
+		logger.Printf("POST: %s", resp.Status)
+	}
+	resp.Body.Close()
+}
+
 func main() {
 	logger := log.New(os.Stdout, "tempest_influx: ", log.LstdFlags)
 
@@ -66,7 +95,6 @@ func main() {
 	for {
 		b := make([]byte, opts.Buffer)
 		n, addr, err := sourceConn.ReadFromUDP(b)
-
 		if err != nil {
 			logger.Printf("Could not receive a packet from %s: %s", addr, err)
 			continue
@@ -76,31 +104,6 @@ func main() {
 			logger.Printf("\nRECV %v %d bytes: %s", addr, n, string(b[:n]))
 		}
 
-		line := tempest(logger, addr, b, n)
-		if line == "" {
-			continue
-		}
-
-		if opts.Verbose {
-			logger.Printf("POST %s", line)
-		}
-
-		request, err := http.NewRequest("POST", url.String(), strings.NewReader(line))
-		if err != nil {
-			logger.Printf("NewRequest: %v", err)
-			continue
-		}
-		request.Header.Set("Authorization", "Token " + opts.Token)
-
-		client := &http.Client{}
-		resp, err := client.Do(request)
-		if err != nil {
-			logger.Printf("Posting to %s: %v", opts.Target, err)
-			continue
-		}
-		if resp.StatusCode >= 400 {
-			logger.Printf("POST: %s", resp.Status)
-		}
-		resp.Body.Close()
+		go packet(logger, url, addr, b, n)
 	}
 }
