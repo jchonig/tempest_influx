@@ -1,6 +1,6 @@
 IMAGE=tempest_influx:latest
 TOKEN=SOMEARBITRARYSTRING
-TARGET=https://metrics.home.honig.net:50222/api/v2/write
+TARGET=https://metrics.home.honig.net:8086/api/v2/write
 
 all: run
 
