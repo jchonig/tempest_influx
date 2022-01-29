@@ -23,7 +23,11 @@ The later is generated every few seconds and the former once a minute.
 
 ## TODO
 
- + [ ] Pass parameters to the container?
+ + [ ] Pass parameters to the container in envrionment (i.e. token)
+   + Use viper for configuration?
+ + [ ] Support `bucket_tag` to allow sending to multiple buckets
+ + [ ] Optionally send `rapid_wind` data
+   + i.e. send rapid_wind to a `daily` bucket with short retention
 
 ## Example
 
