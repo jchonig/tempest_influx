@@ -52,7 +52,7 @@ func packet(logger *log.Logger, url *url.URL, addr *net.UDPAddr, b []byte, n int
 
 func parse() {
 	flag.StringVar(&opts.Source, "source", ":50222", "Source port to listen on")
-	flag.StringVar(&opts.Target, "target", "https://localhost:50222/api/v2/write", "URL to receive influx metrics")
+	flag.StringVar(&opts.Target, "target", "https://localhost:8086/api/v2/write", "URL to receive influx metrics")
 	flag.StringVar(&opts.Token, "token", "", "Authentication token")
 	flag.StringVar(&opts.Bucket, "bucket", "", "InfluxDB bucket name")
 	flag.IntVar(&opts.Buffer, "buffer", 10240, "Max buffer size for the socket io")
