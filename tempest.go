@@ -13,54 +13,54 @@ import (
 	"github.com/de-wax/go-pkg/dewpoint"
 )
 
-var PrecipitationType []string = []string{"none","rain","hail","rain+hail"}
+var PrecipitationType []string = []string{"none", "rain", "hail", "rain+hail"}
 
 type Obs struct {
-	Timestamp int64				// seconds
-	WindLull float64			// m/s
-	WindAvg float64				// m/s
-	WindGust float64			// m/s
-	WindDirection int			// Degrees
-	WindSampleInterval int			// seconds
-	StationPressure float64			// MB
-	AirTemperature float64			// C
-	RelativeHumidity float64		// %
-	Illuminance int				// Lux
-	UV float64				// Index
-	SolarRadiation int			// W/m*2
-	PrecipitationAccumulation float64	// mm
-	PrecipitationType int			//
-	StrikeAvgDistance int			// km
-	StrikeCount int 			// count
-	Battery float64				// Voltags
-	Interval int				// Minutes
+	Timestamp                 int64   // seconds
+	WindLull                  float64 // m/s
+	WindAvg                   float64 // m/s
+	WindGust                  float64 // m/s
+	WindDirection             int     // Degrees
+	WindSampleInterval        int     // seconds
+	StationPressure           float64 // MB
+	AirTemperature            float64 // C
+	RelativeHumidity          float64 // %
+	Illuminance               int     // Lux
+	UV                        float64 // Index
+	SolarRadiation            int     // W/m*2
+	PrecipitationAccumulation float64 // mm
+	PrecipitationType         int     //
+	StrikeAvgDistance         int     // km
+	StrikeCount               int     // count
+	Battery                   float64 // Voltags
+	Interval                  int     // Minutes
 }
 
 type Report struct {
-	StationSerial string	`json:"serial_number,omitempty"`
-	ReportType string	`json:"type"`
-	HubSerial string	`json:"hub_sn,omitempty"`
-	Obs [1][] float64	`json:"obs,omitempty"`
-	Ob [3]float64		`json:"ob,omitempty"`
+	StationSerial string       `json:"serial_number,omitempty"`
+	ReportType    string       `json:"type"`
+	HubSerial     string       `json:"hub_sn,omitempty"`
+	Obs           [1][]float64 `json:"obs,omitempty"`
+	Ob            [3]float64   `json:"ob,omitempty"`
 	//	Firmware_revision string `json:"firmware_revision,omitempty,string"`
-	Uptime int		`json:"uptime,omitempty"`
-	Timestamp int		`json:"timestamp,omitempty"`
-	ResetFlags string	`json:"reset_flags,omitempty"`
-	Seq int			`json:"seq,omitempty"`
-	Fs []float64		`json:"fs,omitempty"`
-	Radio_Stats []float64	`json:"radio_stats,omitempty"`
-	Mqtt_Stats []float64	`json:"mqtt_stats,omitempty"`
-	Voltage float64		`json:"voltage,omitempty"`
-	RSSI float64		`json:"rssi,omitempty"`
-	HubRSSI float64		`json:"hub_rssi,omitempty"`
-	SensorStatus int	`json:"sensor_status,omitempty"`
-	Debug int		`json:"debug,omitempty"`
+	Uptime       int       `json:"uptime,omitempty"`
+	Timestamp    int       `json:"timestamp,omitempty"`
+	ResetFlags   string    `json:"reset_flags,omitempty"`
+	Seq          int       `json:"seq,omitempty"`
+	Fs           []float64 `json:"fs,omitempty"`
+	Radio_Stats  []float64 `json:"radio_stats,omitempty"`
+	Mqtt_Stats   []float64 `json:"mqtt_stats,omitempty"`
+	Voltage      float64   `json:"voltage,omitempty"`
+	RSSI         float64   `json:"rssi,omitempty"`
+	HubRSSI      float64   `json:"hub_rssi,omitempty"`
+	SensorStatus int       `json:"sensor_status,omitempty"`
+	Debug        int       `json:"debug,omitempty"`
 }
 
 func tempest(logger *log.Logger, addr *net.UDPAddr, b []byte, n int) string {
 	var report Report
 	decoder := json.NewDecoder(bytes.NewReader(b[:n]))
-		//		decoder.DisallowUnknownFields()
+	//		decoder.DisallowUnknownFields()
 	err := decoder.Decode(&report)
 	if err != nil {
 		logger.Printf("Could not Unmarshal %d bytes from %v: %v: %v", n, addr, err, string(b[:n]))
@@ -72,7 +72,7 @@ func tempest(logger *log.Logger, addr *net.UDPAddr, b []byte, n int) string {
 	}
 
 	var obs Obs
-	for i:=0; i<19; i++ {
+	for i := 0; i < 19; i++ {
 		switch i {
 		case 0:
 			obs.Timestamp = int64(report.Obs[0][i])
@@ -122,21 +122,21 @@ func tempest(logger *log.Logger, addr *net.UDPAddr, b []byte, n int) string {
 
 	// Set fields and sort into alphabetical order to keep InfluxDB happy
 	fields := map[string]string{
-		"battery":		fmt.Sprintf("%.2f", obs.Battery),
-		"dew_point":		fmt.Sprintf("%.2f", dp),
-		"illuminance":		fmt.Sprintf("%d", obs.Illuminance),
-		"p":			fmt.Sprintf("%.2f", obs.StationPressure),
-		"precipitation":	fmt.Sprintf("%.2f", obs.PrecipitationAccumulation),
-		"precipitation_type":	fmt.Sprintf("%d", obs.PrecipitationType),
-		"solar_radiation":	fmt.Sprintf("%d", obs.SolarRadiation),
-		"strike_count":         fmt.Sprintf("%d", obs.StrikeCount),
-		"strike_distance":      fmt.Sprintf("%d", obs.StrikeAvgDistance),
-		"temp":			fmt.Sprintf("%.2f", obs.AirTemperature),
-		"uv":			fmt.Sprintf("%.2f", obs.UV),
-		"wind_avg":		fmt.Sprintf("%.2f", obs.WindAvg),
-		"wind_direction":	fmt.Sprintf("%d", obs.WindDirection),
-		"wind_gust":		fmt.Sprintf("%.2f", obs.WindGust),
-		"wind_lull":		fmt.Sprintf("%.2f", obs.WindLull),
+		"battery":            fmt.Sprintf("%.2f", obs.Battery),
+		"dew_point":          fmt.Sprintf("%.2f", dp),
+		"illuminance":        fmt.Sprintf("%d", obs.Illuminance),
+		"p":                  fmt.Sprintf("%.2f", obs.StationPressure),
+		"precipitation":      fmt.Sprintf("%.2f", obs.PrecipitationAccumulation),
+		"precipitation_type": fmt.Sprintf("%d", obs.PrecipitationType),
+		"solar_radiation":    fmt.Sprintf("%d", obs.SolarRadiation),
+		"strike_count":       fmt.Sprintf("%d", obs.StrikeCount),
+		"strike_distance":    fmt.Sprintf("%d", obs.StrikeAvgDistance),
+		"temp":               fmt.Sprintf("%.2f", obs.AirTemperature),
+		"uv":                 fmt.Sprintf("%.2f", obs.UV),
+		"wind_avg":           fmt.Sprintf("%.2f", obs.WindAvg),
+		"wind_direction":     fmt.Sprintf("%d", obs.WindDirection),
+		"wind_gust":          fmt.Sprintf("%.2f", obs.WindGust),
+		"wind_lull":          fmt.Sprintf("%.2f", obs.WindLull),
 	}
 	field_list := make([]string, 0, len(fields))
 	for k := range fields {
@@ -148,6 +148,6 @@ func tempest(logger *log.Logger, addr *net.UDPAddr, b []byte, n int) string {
 		report.StationSerial,
 		strings.Join(field_list, ","),
 		obs.Timestamp)
-	
+
 	return line
 }

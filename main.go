@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 	"net"
-	"net/url"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 
@@ -12,13 +12,13 @@ import (
 )
 
 var opts struct {
-	Source string
-	Target string
-	Token string
-	Bucket string
-	Buffer int
+	Source  string
+	Target  string
+	Token   string
+	Bucket  string
+	Buffer  int
 	Verbose bool
-	Debug bool
+	Debug   bool
 }
 
 func packet(logger *log.Logger, url *url.URL, addr *net.UDPAddr, b []byte, n int) {
@@ -36,7 +36,7 @@ func packet(logger *log.Logger, url *url.URL, addr *net.UDPAddr, b []byte, n int
 		logger.Printf("NewRequest: %v", err)
 		return
 	}
-	request.Header.Set("Authorization", "Token " + opts.Token)
+	request.Header.Set("Authorization", "Token "+opts.Token)
 
 	client := &http.Client{}
 	resp, err := client.Do(request)
