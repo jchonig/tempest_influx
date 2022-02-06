@@ -29,6 +29,11 @@ func packet(url *url.URL, addr *net.UDPAddr, b []byte, n int) {
 	}
 	request.Header.Set("Authorization", "Token "+opts.Influx_Token)
 
+	if opts.Noop {
+		log.Printf("NOOP %s: %v", url)
+		return
+	}
+
 	client := &http.Client{}
 	resp, err := client.Do(request)
 	if err != nil {

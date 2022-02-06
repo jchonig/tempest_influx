@@ -15,6 +15,7 @@ type Config struct {
 	Buffer         int
 	Verbose        bool
 	Debug          bool
+	Noop           bool
 }
 
 func LoadConfig(path string, name string) (config *Config) {
@@ -31,6 +32,7 @@ func LoadConfig(path string, name string) (config *Config) {
 	flag.Int("buffer", 0, "Max buffer size for the socket io")
 	flag.BoolP("verbose", "v", false, "Verbose logging")
 	flag.BoolP("debug", "d", false, "Debug logging")
+	flag.BoolP("noop", "n", false, "Don't post to influx")
 
 	viper.AddConfigPath(path)
 
