@@ -5,19 +5,22 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
-
-	"github.com/davecgh/go-spew/spew"
 )
 
 var opts *Config
 
 func packet(url *url.URL, addr *net.UDPAddr, b []byte, n int) {
-	line := tempest(addr, b, n)
-	if line == "" {
+	m := tempest(addr, b, n)
+	if opts.Debug {
+		log.Printf("InfluxData %+v", m)
+	}
+	if m.Timestamp == 0 {
 		return
 	}
 
+	line := InfluxMarshal(m)
 	if opts.Verbose {
 		log.Printf("POST %s", line)
 	}
@@ -49,9 +52,15 @@ func packet(url *url.URL, addr *net.UDPAddr, b []byte, n int) {
 func main() {
 	log.SetPrefix("tempest_influx: ")
 
-	opts = LoadConfig("/config", "tempest_influx")
+	// Check for a config path overrride
+	var config_dir string = os.Getenv("TEMPEST_INFLUX_CONFIG_DIR")
+	if config_dir == "" {
+		config_dir = "/config"
+	}
+	log.Printf("Config Dir: %s", config_dir)
+	opts = LoadConfig(config_dir, "tempest_influx")
 	if opts.Debug {
-		spew.Dump(opts)
+		log.Printf("Config %+v", opts)
 	}
 
 	sourceAddr, err := net.ResolveUDPAddr("udp", opts.Listen_Address)
@@ -68,19 +77,22 @@ func main() {
 	defer sourceConn.Close()
 
 	url, err := url.Parse(opts.Influx_URL)
+
+	// Set query artuments
 	query := url.Query()
 	query.Set("precision", "s")
-	if opts.Influx_Bucket != "" {
-		query.Set("bucket", opts.Influx_Bucket)
-	}
 	url.RawQuery = query.Encode()
 
-	log.Printf(">> Starting tempest_influx, Verbose %v Debug %v Listen_Address %v, Target %v",
+	log.Printf("Starting tempest_influx, Verbose %v Debug %v Listen_Address %v, Influx %v Bucket %s Rapid_Wind %v Rapid_Wind_Bucket %v",
 		opts.Verbose,
 		opts.Debug,
 		opts.Listen_Address,
-		url.String())
+		url.String(),
+		opts.Influx_Bucket,
+		opts.Rapid_Wind,
+		opts.Influx_Bucket_Rapid_Wind)
 
+	// Read packets
 	for {
 		b := make([]byte, opts.Buffer)
 		n, addr, err := sourceConn.ReadFromUDP(b)

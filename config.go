@@ -8,14 +8,18 @@ import (
 )
 
 type Config struct {
-	Listen_Address string `mapstructure:"LISTEN_ADDRESS"`
-	Influx_URL     string `mapstructure:"INFLUX_URL"`
-	Influx_Token   string `mapstructure:"INFLUX_TOKEN"`
-	Influx_Bucket  string `mapstructure:"INFLUX_BUCKET"`
-	Buffer         int
-	Verbose        bool
-	Debug          bool
-	Noop           bool
+	Config_Dir               string `mapstructure:"CONFIG_DIR"`
+	Listen_Address           string `mapstructure:"LISTEN_ADDRESS"`
+	Influx_URL               string `mapstructure:"INFLUX_URL"`
+	Influx_Token             string `mapstructure:"INFLUX_TOKEN"`
+	Influx_Bucket            string `mapstructure:"INFLUX_BUCKET"`
+	Influx_Bucket_Tag        string `mapstructure:"INFLUX_BUCKET_TAG"`
+	Influx_Bucket_Rapid_Wind string `mapstructure:"INFLUX_BUCKET_RAPID_WIND"`
+	Buffer                   int
+	Verbose                  bool
+	Debug                    bool
+	Noop                     bool
+	Rapid_Wind               bool `mapstructure:"RAPID_WIND"`
 }
 
 func LoadConfig(path string, name string) (config *Config) {
@@ -24,15 +28,19 @@ func LoadConfig(path string, name string) (config *Config) {
 	viper.SetDefault("Listen_Address", ":50222")
 	viper.SetDefault("Influx_URL", "https://localhost:8086/api/v2/write")
 	viper.SetDefault("Buffer", 10240)
+	viper.SetDefault("Influx_Bucket_Tag", "bucket")
 
 	flag.String("listen_address", "", "Address to listen for UDP Broadcasts")
 	flag.String("influx_url", "", "URL to receive influx metrics")
 	flag.String("influx_token", "", "Authentication token for Influx")
 	flag.String("influx_bucket", "", "InfluxDB bucket name")
+	flag.String("influx_bucket_tag", "", "InfluxDB tag to contain the bucket")
+	flag.String("influx_bucket_rapid_wind", "", "InfluxDB bucket name for rapid wind reports")
 	flag.Int("buffer", 0, "Max buffer size for the socket io")
 	flag.BoolP("verbose", "v", false, "Verbose logging")
 	flag.BoolP("debug", "d", false, "Debug logging")
 	flag.BoolP("noop", "n", false, "Don't post to influx")
+	flag.Bool("rapid_wind", false, "Send rapid wind reports")
 
 	viper.AddConfigPath(path)
 

@@ -7,34 +7,11 @@ import (
 	"log"
 	"math"
 	"net"
-	"sort"
-	"strings"
 
 	"github.com/de-wax/go-pkg/dewpoint"
 )
 
 var PrecipitationType []string = []string{"none", "rain", "hail", "rain+hail"}
-
-type Obs struct {
-	Timestamp                 int64   // seconds
-	WindLull                  float64 // m/s
-	WindAvg                   float64 // m/s
-	WindGust                  float64 // m/s
-	WindDirection             int     // Degrees
-	WindSampleInterval        int     // seconds
-	StationPressure           float64 // MB
-	AirTemperature            float64 // C
-	RelativeHumidity          float64 // %
-	Illuminance               int     // Lux
-	UV                        float64 // Index
-	SolarRadiation            int     // W/m*2
-	PrecipitationAccumulation float64 // mm
-	PrecipitationType         int     //
-	StrikeAvgDistance         int     // km
-	StrikeCount               int     // count
-	Battery                   float64 // Voltags
-	Interval                  int     // Minutes
-}
 
 type Report struct {
 	StationSerial string       `json:"serial_number,omitempty"`
@@ -57,21 +34,29 @@ type Report struct {
 	Debug        int       `json:"debug,omitempty"`
 }
 
-func tempest(addr *net.UDPAddr, b []byte, n int) string {
-	var report Report
-	decoder := json.NewDecoder(bytes.NewReader(b[:n]))
-	//		decoder.DisallowUnknownFields()
-	err := decoder.Decode(&report)
-	if err != nil {
-		log.Printf("Could not Unmarshal %d bytes from %v: %v: %v", n, addr, err, string(b[:n]))
-		return ""
+func tempest_obs_st(report Report, m *InfluxData) {
+	type Obs struct {
+		Timestamp                 int64   // seconds
+		WindLull                  float64 // m/s
+		WindAvg                   float64 // m/s
+		WindGust                  float64 // m/s
+		WindDirection             int     // Degrees
+		WindSampleInterval        int     // seconds
+		StationPressure           float64 // MB
+		AirTemperature            float64 // C
+		RelativeHumidity          float64 // %
+		Illuminance               int     // Lux
+		UV                        float64 // Index
+		SolarRadiation            int     // W/m*2
+		PrecipitationAccumulation float64 // mm
+		PrecipitationType         int     //
+		StrikeAvgDistance         int     // km
+		StrikeCount               int     // count
+		Battery                   float64 // Voltags
+		Interval                  int     // Minutes
 	}
-
-	if report.ReportType != "obs_st" {
-		return ""
-	}
-
 	var obs Obs
+
 	for i := 0; i < 19; i++ {
 		switch i {
 		case 0:
@@ -112,7 +97,9 @@ func tempest(addr *net.UDPAddr, b []byte, n int) string {
 			obs.Interval = int(math.Round(report.Obs[0][i]))
 		}
 	}
-	log.Printf("REPORT %+v %+v", report, obs)
+	if opts.Debug {
+		log.Printf("OBS_ST %+v %+v", report, obs)
+	}
 
 	// Calculate Dew Point from RH and Temp
 	dp, err := dewpoint.Calculate(obs.AirTemperature, obs.RelativeHumidity)
@@ -120,8 +107,9 @@ func tempest(addr *net.UDPAddr, b []byte, n int) string {
 		log.Printf("dewpoint.Calculate(%f, %f): %v", obs.AirTemperature, obs.RelativeHumidity, err)
 	}
 
+	m.Timestamp = obs.Timestamp
 	// Set fields and sort into alphabetical order to keep InfluxDB happy
-	fields := map[string]string{
+	m.Fields = map[string]string{
 		"battery":            fmt.Sprintf("%.2f", obs.Battery),
 		"dew_point":          fmt.Sprintf("%.2f", dp),
 		"illuminance":        fmt.Sprintf("%d", obs.Illuminance),
@@ -138,16 +126,75 @@ func tempest(addr *net.UDPAddr, b []byte, n int) string {
 		"wind_gust":          fmt.Sprintf("%.2f", obs.WindGust),
 		"wind_lull":          fmt.Sprintf("%.2f", obs.WindLull),
 	}
-	field_list := make([]string, 0, len(fields))
-	for k := range fields {
-		field_list = append(field_list, fmt.Sprintf("%s=%s", k, fields[k]))
+}
+
+func tempest_rapid_wind(report Report, m *InfluxData) {
+	type RapidWind struct {
+		Timestamp     int64   // seconds
+		WindSpeed     float64 // m/s
+		WindDirection int     // degrees
+
 	}
-	sort.Strings(field_list)
+	var rapid_wind RapidWind
 
-	line := fmt.Sprintf("weather,station=%s %s %v\n",
-		report.StationSerial,
-		strings.Join(field_list, ","),
-		obs.Timestamp)
+	for i := 0; i < 3; i++ {
+		switch i {
+		case 0:
+			rapid_wind.Timestamp = int64(report.Ob[i])
+		case 1:
+			rapid_wind.WindSpeed = report.Ob[i]
+		case 2:
+			rapid_wind.WindDirection = int(math.Round(report.Ob[i]))
+		}
+	}
+	if opts.Debug {
+		log.Printf("RAPID_WIND %+v %+v", report, rapid_wind)
+	}
 
-	return line
+	m.Timestamp = rapid_wind.Timestamp
+	m.Fields = map[string]string{
+		"rapid_wind_speed":     fmt.Sprintf("%.2f", rapid_wind.WindSpeed),
+		"rapid_wind_direction": fmt.Sprintf("%d", rapid_wind.WindDirection),
+	}
+}
+
+func tempest(addr *net.UDPAddr, b []byte, n int) (m *InfluxData) {
+	var report Report
+	decoder := json.NewDecoder(bytes.NewReader(b[:n]))
+	//		decoder.DisallowUnknownFields()
+	err := decoder.Decode(&report)
+	if err != nil {
+		log.Printf("Could not Unmarshal %d bytes from %v: %v: %v", n, addr, err, string(b[:n]))
+		return
+	}
+
+	m = NewInfluxData()
+
+	if opts.Influx_Bucket != "" {
+		m.Tags[opts.Influx_Bucket_Tag] = opts.Influx_Bucket
+	}
+
+	switch report.ReportType {
+	case "obs_st":
+		m.Name = "weather"
+		tempest_obs_st(report, m)
+		m.Tags["station"] = report.StationSerial
+	case "rapid_wind":
+		if !opts.Rapid_Wind {
+			return
+		}
+		m.Name = "weather"
+		tempest_rapid_wind(report, m)
+		m.Tags["station"] = report.StationSerial
+		if opts.Influx_Bucket_Rapid_Wind != "" {
+			m.Tags[opts.Influx_Bucket_Tag] = opts.Influx_Bucket_Rapid_Wind
+		}
+
+	case "hub_status", "evt_precip", "evt_strike":
+		return
+	default:
+		return
+	}
+
+	return
 }

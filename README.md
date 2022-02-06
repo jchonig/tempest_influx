@@ -38,17 +38,20 @@ Environement variables as described in the table below.  These override configur
 Command line flags, also described in the table below.  These override
 configuration file adata and environment variables.
 
-|-----------------------------|----------------|-------------------------------|------------------|--------------------------------------|
-| Value                       | Config File    | Environment                   | Flag             | Default                              |
-|-----------------------------|----------------|-------------------------------|------------------|--------------------------------------|
-| Read buffer size            | buffer         | TEMPEST_INFLUX_BUFFER         | --buffer         | 10240                                |
-| Listen Address              | listen_address | TEMPEST_INFLUX_LISTEN_ADDRESS | --listen_address | :50222                               |
-| InfluxDB write URL          | influx_url     | TEMPEST_INFLUX_INFLUX_URL     | --influx_url     | https://localhost:8086/api/v2/write |
-| Influx authentication token | influx_token   | TEMPEST_INFLUX_INFLUX_TOKEN   | --influx_token   |                                      |
-| Influx bucket               | influx_bucket  | TEMPEST_INFLUX_INFLUX_BUCKET  | --influx_bucket  |                                      |
-| Verbose logging             | verbose        | TEMPEST_INFLUX_VERBOSE        | -v, --verbose    | False (True if Debug set)            |
-| Debug logging               | debug          | TEMPEST_INFLUX_DEBUG          | -d, --debug      | False                                |
-|-----------------------------|----------------|-------------------------------|------------------|--------------------------------------|
+|------------------------------------|--------------------------|-----------------------------------------|----------------------------|-------------------------------------|
+| Value                              | Config File              | Environment                             | Flag                       | Default                             |
+|------------------------------------|--------------------------|-----------------------------------------|----------------------------|-------------------------------------|
+| Read buffer size                   | buffer                   | TEMPEST_INFLUX_BUFFER                   | --buffer                   | 10240                               |
+| Listen Address                     | listen_address           | TEMPEST_INFLUX_LISTEN_ADDRESS           | --listen_address           | :50222                              |
+| InfluxDB write URL                 | influx_url               | TEMPEST_INFLUX_INFLUX_URL               | --influx_url               | https://localhost:8086/api/v2/write |
+| Influx authentication token        | influx_token             | TEMPEST_INFLUX_INFLUX_TOKEN             | --influx_token             |                                     |
+| Influx bucket                      | influx_bucket            | TEMPEST_INFLUX_INFLUX_BUCKET            | --influx_bucket            |                                     |
+| Influx bucket for rapid wind       | influx_bucket_rapid_wind | TEMPEST_INFLUX_INFLUX_BUCKET_RAPID_WIND | --influx_bucket_rapid_wind |                                     |
+| Verbose logging                    | verbose                  | TEMPEST_INFLUX_VERBOSE                  | -v, --verbose              | False (True if Debug set)           |
+| Debug logging                      | debug                    | TEMPEST_INFLUX_DEBUG                    | -d, --debug                | False                               |
+| Do not send packets                | noop                     | TEMPEST_INFLUX_NOOP                     | -n, --noop                 | False                               |
+| Send rapid wind reports (every 3s) | rapid_wind               | TEMPEST_RAPID_WIND                      | -rapid_wind                | False                               |
+|------------------------------------|--------------------------|-----------------------------------------|----------------------------|-------------------------------------|
 
 Notes:
 
@@ -57,11 +60,6 @@ Notes:
 
 ## TODO
 
- + [ ] Pass parameters to the container in envrionment (i.e. token)
-   + [ ] Use viper for configuration?
- + [X] Support `bucket_tag` to allow sending to multiple buckets
- + [ ] Optionally send `rapid_wind` data
-   + i.e. send rapid_wind to a `daily` bucket with short retention
  + [ ] Optionally send `hub_status` data
    + [ ] Allow specification of a bucket
 
