@@ -11,4 +11,4 @@ build:
 	docker build -t ${IMAGE} .
 
 compile:
-	go build -o influx_tempest .
+	go build -o tempest_influx .
