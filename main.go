@@ -5,110 +5,89 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 
-	flag "github.com/spf13/pflag"
+	"github.com/davecgh/go-spew/spew"
 )
 
-var opts struct {
-	Source  string
-	Target  string
-	Token   string
-	Bucket  string
-	Buffer  int
-	Verbose bool
-	Debug   bool
-}
+var opts *Config
 
-func packet(logger *log.Logger, url *url.URL, addr *net.UDPAddr, b []byte, n int) {
-	line := tempest(logger, addr, b, n)
+func packet(url *url.URL, addr *net.UDPAddr, b []byte, n int) {
+	line := tempest(addr, b, n)
 	if line == "" {
 		return
 	}
 
 	if opts.Verbose {
-		logger.Printf("POST %s", line)
+		log.Printf("POST %s", line)
 	}
 
 	request, err := http.NewRequest("POST", url.String(), strings.NewReader(line))
 	if err != nil {
-		logger.Printf("NewRequest: %v", err)
+		log.Printf("NewRequest: %v", err)
 		return
 	}
-	request.Header.Set("Authorization", "Token "+opts.Token)
+	request.Header.Set("Authorization", "Token "+opts.Influx_Token)
 
 	client := &http.Client{}
 	resp, err := client.Do(request)
 	if err != nil {
-		logger.Printf("Posting to %s: %v", opts.Target, err)
+		log.Printf("Posting to %s: %v", opts.Influx_URL, err)
 		return
 	}
 	if resp.StatusCode >= 400 {
-		logger.Printf("POST: %s", resp.Status)
+		log.Printf("POST: %s", resp.Status)
 	}
 	resp.Body.Close()
 }
 
-func parse() {
-	flag.StringVar(&opts.Source, "source", ":50222", "Source port to listen on")
-	flag.StringVar(&opts.Target, "target", "https://localhost:8086/api/v2/write", "URL to receive influx metrics")
-	flag.StringVar(&opts.Token, "token", "", "Authentication token")
-	flag.StringVar(&opts.Bucket, "bucket", "", "InfluxDB bucket name")
-	flag.IntVar(&opts.Buffer, "buffer", 10240, "Max buffer size for the socket io")
-	flag.BoolVarP(&opts.Verbose, "verbose", "v", false, "Verbose logging")
-	flag.BoolVarP(&opts.Debug, "debug", "d", false, "Debug logging")
-
-	flag.Parse()
-	if opts.Debug {
-		opts.Verbose = opts.Debug
-	}
-}
-
 func main() {
-	logger := log.New(os.Stdout, "tempest_influx: ", log.LstdFlags)
+	log.SetPrefix("tempest_influx: ")
 
-	parse()
+	opts = LoadConfig("/config", "tempest_influx")
+	if opts.Debug {
+		spew.Dump(opts)
+	}
 
-	sourceAddr, err := net.ResolveUDPAddr("udp", opts.Source)
+	sourceAddr, err := net.ResolveUDPAddr("udp", opts.Listen_Address)
 	if err != nil {
-		logger.Fatalf("Could not resolve source address: %s: %s", opts.Source, err)
+		log.Fatalf("Could not resolve source address: %s: %s", opts.Listen_Address, err)
 	}
 
 	sourceConn, err := net.ListenUDP("udp", sourceAddr)
 	if err != nil {
-		logger.Fatalf("Could not listen on address: %s: %s", opts.Source, err)
+		log.Fatalf("Could not listen on address: %s: %s", opts.Listen_Address, err)
 		return
 	}
 
 	defer sourceConn.Close()
 
-	url, err := url.Parse(opts.Target)
+	url, err := url.Parse(opts.Influx_URL)
 	query := url.Query()
 	query.Set("precision", "s")
-	if opts.Bucket != "" {
-		query.Set("bucket", opts.Bucket)
+	if opts.Influx_Bucket != "" {
+		query.Set("bucket", opts.Influx_Bucket)
 	}
 	url.RawQuery = query.Encode()
 
-	logger.Printf(">> Starting tempest_influx, Verbose %v Debug %v Source at %v, Target at %v",
+	log.Printf(">> Starting tempest_influx, Verbose %v Debug %v Listen_Address %v, Target %v",
 		opts.Verbose,
 		opts.Debug,
-		opts.Source,
+		opts.Listen_Address,
 		url.String())
 
 	for {
 		b := make([]byte, opts.Buffer)
 		n, addr, err := sourceConn.ReadFromUDP(b)
 		if err != nil {
-			logger.Printf("Could not receive a packet from %s: %s", addr, err)
+			log.Printf("Could not receive a packet from %s: %s", addr, err)
 			continue
 		}
 
 		if opts.Debug {
-			logger.Printf("\nRECV %v %d bytes: %s", addr, n, string(b[:n]))
+			log.Printf("\nRECV %v %d bytes: %s", addr, n, string(b[:n]))
 		}
 
-		go packet(logger, url, addr, b, n)
+		go packet(url, addr, b, n)
 	}
 }

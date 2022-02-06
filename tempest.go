@@ -57,13 +57,13 @@ type Report struct {
 	Debug        int       `json:"debug,omitempty"`
 }
 
-func tempest(logger *log.Logger, addr *net.UDPAddr, b []byte, n int) string {
+func tempest(addr *net.UDPAddr, b []byte, n int) string {
 	var report Report
 	decoder := json.NewDecoder(bytes.NewReader(b[:n]))
 	//		decoder.DisallowUnknownFields()
 	err := decoder.Decode(&report)
 	if err != nil {
-		logger.Printf("Could not Unmarshal %d bytes from %v: %v: %v", n, addr, err, string(b[:n]))
+		log.Printf("Could not Unmarshal %d bytes from %v: %v: %v", n, addr, err, string(b[:n]))
 		return ""
 	}
 
@@ -112,12 +112,12 @@ func tempest(logger *log.Logger, addr *net.UDPAddr, b []byte, n int) string {
 			obs.Interval = int(math.Round(report.Obs[0][i]))
 		}
 	}
-	logger.Printf("REPORT %+v %+v", report, obs)
+	log.Printf("REPORT %+v %+v", report, obs)
 
 	// Calculate Dew Point from RH and Temp
 	dp, err := dewpoint.Calculate(obs.AirTemperature, obs.RelativeHumidity)
 	if err != nil {
-		logger.Printf("dewpoint.Calculate(%f, %f): %v", obs.AirTemperature, obs.RelativeHumidity, err)
+		log.Printf("dewpoint.Calculate(%f, %f): %v", obs.AirTemperature, obs.RelativeHumidity, err)
 	}
 
 	// Set fields and sort into alphabetical order to keep InfluxDB happy

@@ -11,4 +11,6 @@ COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 EXPOSE 50222/udp
 
+VOLUME "/config"
+
 ENTRYPOINT ["/bin/tempest_influx"]
