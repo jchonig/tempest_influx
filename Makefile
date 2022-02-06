@@ -1,11 +1,11 @@
 IMAGE=tempest_influx:latest
-TOKEN=SOMEARBITRARYSTRING
-TARGET=https://metrics.home.honig.net:8086/api/v2/write
+FLAGS=-v
 
 all: run
 
 run: build
-	docker run --net=host -- ${IMAGE} -v --token ${TOKEN} --target ${TARGET}
+	test -f config/tempest_influx.yml && VOLUMES="-v $${PWD}/config:/config" && \
+		docker run --net=host $${VOLUMES:-} -- ${IMAGE} ${FLAGS}
 
 build:
 	docker build -t ${IMAGE} .

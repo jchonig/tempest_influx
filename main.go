@@ -30,7 +30,7 @@ func packet(url *url.URL, addr *net.UDPAddr, b []byte, n int) {
 	request.Header.Set("Authorization", "Token "+opts.Influx_Token)
 
 	if opts.Noop {
-		log.Printf("NOOP %s: %v", url)
+		log.Printf("NOOP %s", url)
 		return
 	}
 
