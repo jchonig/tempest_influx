@@ -170,9 +170,7 @@ func tempest(addr *net.UDPAddr, b []byte, n int) (m *InfluxData, err error) {
 
 	m = NewInfluxData()
 
-	if opts.Influx_Bucket != "" {
-		m.Tags[opts.Influx_Bucket_Tag] = opts.Influx_Bucket
-	}
+	m.Bucket = opts.Influx_Bucket
 
 	switch report.ReportType {
 	case "obs_st":
@@ -187,13 +185,17 @@ func tempest(addr *net.UDPAddr, b []byte, n int) (m *InfluxData, err error) {
 		tempest_rapid_wind(report, m)
 		m.Tags["station"] = report.StationSerial
 		if opts.Influx_Bucket_Rapid_Wind != "" {
-			m.Tags[opts.Influx_Bucket_Tag] = opts.Influx_Bucket_Rapid_Wind
+			m.Bucket = opts.Influx_Bucket_Rapid_Wind
 		}
 
 	case "hub_status", "evt_precip", "evt_strike":
 		return
 	default:
 		return
+	}
+
+	if opts.Influx_Bucket_Tag != "" {
+		m.Tags[opts.Influx_Bucket_Tag] = m.Bucket
 	}
 
 	return

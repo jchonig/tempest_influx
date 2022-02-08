@@ -29,6 +29,13 @@ func packet(url *url.URL, addr *net.UDPAddr, b []byte, n int) {
 		log.Printf("POST %s", line)
 	}
 
+	if m.Bucket != "" && opts.Influx_Bucket_Tag == "" {
+		// Set query artuments
+		query := url.Query()
+		query.Set("bucket", m.Bucket)
+		url.RawQuery = query.Encode()
+	}
+
 	request, err := http.NewRequest("POST", url.String(), strings.NewReader(line))
 	if err != nil {
 		log.Printf("NewRequest: %v", err)

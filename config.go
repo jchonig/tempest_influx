@@ -28,7 +28,6 @@ func LoadConfig(path string, name string) (config *Config) {
 	viper.SetDefault("Listen_Address", ":50222")
 	viper.SetDefault("Influx_URL", "https://localhost:8086/api/v2/write")
 	viper.SetDefault("Buffer", 10240)
-	viper.SetDefault("Influx_Bucket_Tag", "bucket")
 
 	flag.String("listen_address", "", "Address to listen for UDP Broadcasts")
 	flag.String("influx_url", "", "URL to receive influx metrics")

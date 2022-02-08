@@ -9,6 +9,7 @@ import (
 type InfluxData struct {
 	Timestamp int64
 	Name      string
+	Bucket    string
 	Tags      map[string]string
 	Fields    map[string]string
 }
