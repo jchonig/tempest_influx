@@ -60,7 +60,7 @@ func LoadConfig(path string, name string) (config *Config) {
 	if err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 		} else {
-			log.Fatal("%v", err)
+			log.Fatalf("%v", err)
 		}
 	}
 	err = viper.Unmarshal(&config)
