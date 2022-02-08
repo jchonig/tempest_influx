@@ -19,7 +19,7 @@ type Report struct {
 	HubSerial     string       `json:"hub_sn,omitempty"`
 	Obs           [1][]float64 `json:"obs,omitempty"`
 	Ob            [3]float64   `json:"ob,omitempty"`
-	//	Firmware_revision string `json:"firmware_revision,omitempty,string"`
+	FirmwareRevision int
 	Uptime       int       `json:"uptime,omitempty"`
 	Timestamp    int       `json:"timestamp,omitempty"`
 	ResetFlags   string    `json:"reset_flags,omitempty"`
@@ -158,13 +158,13 @@ func tempest_rapid_wind(report Report, m *InfluxData) {
 	}
 }
 
-func tempest(addr *net.UDPAddr, b []byte, n int) (m *InfluxData) {
+func tempest(addr *net.UDPAddr, b []byte, n int) (m *InfluxData, err error) {
 	var report Report
 	decoder := json.NewDecoder(bytes.NewReader(b[:n]))
 	//		decoder.DisallowUnknownFields()
-	err := decoder.Decode(&report)
+	err = decoder.Decode(&report)
 	if err != nil {
-		log.Printf("Could not Unmarshal %d bytes from %v: %v: %v", n, addr, err, string(b[:n]))
+		err = fmt.Errorf("ERROR Could not Unmarshal %d bytes from %v: %v: %v", n, addr, err, string(b[:n]))
 		return
 	}
 

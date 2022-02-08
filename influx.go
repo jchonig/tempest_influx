@@ -15,7 +15,7 @@ type InfluxData struct {
 
 // Create an InFluxData struct
 func NewInfluxData() (m *InfluxData) {
-	m = new(InfluxData)
+	m = &InfluxData{}
 	m.Tags = make(map[string]string)
 	m.Fields = make(map[string]string)
 
@@ -23,7 +23,7 @@ func NewInfluxData() (m *InfluxData) {
 }
 
 // Marshal InfluxData into into Influx wire protocol
-func InfluxMarshal(m *InfluxData) (line string) {
+func (m *InfluxData) Marshal() (line string) {
 
 	tags := make([]string, 0, len(m.Tags))
 	for tag := range m.Tags {

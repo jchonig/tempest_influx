@@ -60,8 +60,10 @@ Notes:
 
 ## TODO
 
- + [ ] Optionally send `hub_status` data
+ + [ ] Hack around firmware_version being and int and string
+ + [ ] Optionally send `device_status` and `hub_status` data
    + [ ] Allow specification of a bucket
+   + [ ] Structure config?
 
 ## Examples
 

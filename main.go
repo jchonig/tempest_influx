@@ -12,15 +12,19 @@ import (
 var opts *Config
 
 func packet(url *url.URL, addr *net.UDPAddr, b []byte, n int) {
-	m := tempest(addr, b, n)
-	if opts.Debug {
-		log.Printf("InfluxData %+v", m)
+	m, err := tempest(addr, b, n)
+	if err != nil {
+		log.Printf("%v:", err)
+		return
 	}
 	if m.Timestamp == 0 {
 		return
 	}
+	if opts.Debug {
+		log.Printf("InfluxData %+v", m)
+	}
 
-	line := InfluxMarshal(m)
+	line := m.Marshal()
 	if opts.Verbose {
 		log.Printf("POST %s", line)
 	}
