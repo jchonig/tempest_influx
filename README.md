@@ -94,14 +94,10 @@ InfluxDB via the influxdb_v2_listener, for example:
 ```
 [[inputs.influxdb_v2_listener]]
   service_address = ":8086"
-  bucket_tag = "metrics"
   tls_cert = "/etc/telegraf/keys/cert.pem"
   tls_key = "/etc/telegraf/keys/key.pem"
   token = "SOMEARBITRARYSTRING"
 ```
-
-If `bucket_tag` is defined in the Telegraf config file it won't be
-necessary to pass it to `tempest_influx`.
 
 ## Credits
 

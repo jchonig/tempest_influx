@@ -194,9 +194,5 @@ func tempest(addr *net.UDPAddr, b []byte, n int) (m *InfluxData, err error) {
 		return
 	}
 
-	if opts.Influx_Bucket_Tag != "" {
-		m.Tags[opts.Influx_Bucket_Tag] = m.Bucket
-	}
-
 	return
 }

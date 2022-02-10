@@ -13,7 +13,6 @@ type Config struct {
 	Influx_URL               string `mapstructure:"INFLUX_URL"`
 	Influx_Token             string `mapstructure:"INFLUX_TOKEN"`
 	Influx_Bucket            string `mapstructure:"INFLUX_BUCKET"`
-	Influx_Bucket_Tag        string `mapstructure:"INFLUX_BUCKET_TAG"`
 	Influx_Bucket_Rapid_Wind string `mapstructure:"INFLUX_BUCKET_RAPID_WIND"`
 	Buffer                   int
 	Verbose                  bool
@@ -33,7 +32,6 @@ func LoadConfig(path string, name string) (config *Config) {
 	flag.String("influx_url", "", "URL to receive influx metrics")
 	flag.String("influx_token", "", "Authentication token for Influx")
 	flag.String("influx_bucket", "", "InfluxDB bucket name")
-	flag.String("influx_bucket_tag", "", "InfluxDB tag to contain the bucket")
 	flag.String("influx_bucket_rapid_wind", "", "InfluxDB bucket name for rapid wind reports")
 	flag.Int("buffer", 0, "Max buffer size for the socket io")
 	flag.BoolP("verbose", "v", false, "Verbose logging")

@@ -29,7 +29,7 @@ func packet(url *url.URL, addr *net.UDPAddr, b []byte, n int) {
 		log.Printf("POST %s", line)
 	}
 
-	if m.Bucket != "" && opts.Influx_Bucket_Tag == "" {
+	if m.Bucket != "" {
 		// Set query artuments
 		query := url.Query()
 		query.Set("bucket", m.Bucket)
@@ -46,6 +46,9 @@ func packet(url *url.URL, addr *net.UDPAddr, b []byte, n int) {
 	if opts.Noop {
 		log.Printf("NOOP %s", url)
 		return
+	}
+	if opts.Verbose {
+		log.Printf("POST %s", url)
 	}
 
 	client := &http.Client{}
