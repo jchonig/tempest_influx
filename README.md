@@ -72,7 +72,7 @@ version: "3"
 services:
   tempest_influx:
 	image: "jchonig/tempest_influx:latest"
-    net: host
+    network_mode: host
 	environment:
 	  TEMPEST_INFLUX_INFLUX_URL: "https://metrics.example.com:8086/api/v2/write"
       TEMPEST_INFLUX_INFLUX_TOKEN: "SOMEARBITRARYSTRING"
