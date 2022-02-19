@@ -15,7 +15,7 @@ This program will forward selected data to
 proxy.
 
 Docker host networking is required to receive the UDP broadcasts,
-inless some type of proxy is used.
+unless some type of proxy is used.
 
 ## Tempest WX Broadcast Formats
 
@@ -30,15 +30,10 @@ The later is generated every few seconds and the former once a minute.
 
 There are three ways to pass configuration information:
 
-A optional YAML configuration file may be provided in *XXX/tempest_influx.yml*
-which is read at startup.
+  1. A optional YAML configuration file may be provided in /config/tempest_influx.yml* which is read at startup.
+  2. Environement variables as described in the table below.  These override configuration file data.
+  3. Command line flags, also described in the table below.  These override configuration file adata and environment variables.
 
-Environement variables as described in the table below.  These override configuration file data.
-
-Command line flags, also described in the table below.  These override
-configuration file adata and environment variables.
-
-|------------------------------------|--------------------------|-----------------------------------------|----------------------------|-------------------------------------|
 | Value                              | Config File              | Environment                             | Flag                       | Default                             |
 |------------------------------------|--------------------------|-----------------------------------------|----------------------------|-------------------------------------|
 | Read buffer size                   | buffer                   | TEMPEST_INFLUX_BUFFER                   | --buffer                   | 10240                               |
@@ -51,16 +46,16 @@ configuration file adata and environment variables.
 | Debug logging                      | debug                    | TEMPEST_INFLUX_DEBUG                    | -d, --debug                | False                               |
 | Do not send packets                | noop                     | TEMPEST_INFLUX_NOOP                     | -n, --noop                 | False                               |
 | Send rapid wind reports (every 3s) | rapid_wind               | TEMPEST_RAPID_WIND                      | -rapid_wind                | False                               |
-|------------------------------------|--------------------------|-----------------------------------------|----------------------------|-------------------------------------|
 
 Notes:
 
    + *influx_token* is required by *InfluxDB* or *Telegraf* to authenticate requests.
-   + *influx_bucket* is not required if configured on the receiving end
+   + *influx_bucket* is not required if configured on the receiving end.
 
 ## TODO
 
- + [ ] Hack around firmware_version being and int and string
+ + [ ] Hack around firmware_version being and int and string in
+       different packets
  + [ ] Optionally send `device_status` and `hub_status` data
    + [ ] Allow specification of a bucket
    + [ ] Structure config?
@@ -101,4 +96,4 @@ InfluxDB via the influxdb_v2_listener, for example:
 
 ## Credits
 
-Inspired by the code in [udpproxy](https://github.com/Akagi201/udpproxy)
+Core UDP packet processing code based on code in [udpproxy](https://github.com/Akagi201/udpproxy)
