@@ -3,6 +3,8 @@
 Go program to convert WeatherFlow Tempest WX UDP broadcasts to influx
 wire protocol.
 
+Image hosted at: `ghcr.io/jchonig/tempest_influx`
+
 The [Tempest Weather
 System](https://shop.weatherflow.com/products/tempest) sends UDP
 broadcasts with weather data and system status periodically.
@@ -71,7 +73,7 @@ version: "3"
 
 services:
   tempest_influx:
-    image: "jchonig/tempest_influx:latest"
+    image: "ghcr.io/jchonig/tempest_influx:latest"
     network_mode: host
     environment:
       TEMPEST_INFLUX_INFLUX_URL: "https://metrics.example.com:8086/api/v2/write"
